@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Texas Hold’em Trainer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>Texas Hold’em Trainer</h1>
+    <p class="subtitle">Learn how to play poker by simulating hands and visualizing your win odds.</p>
+
+    <div id="chips">
+      💰 Player 1: $100 | Player 2: $100
+      <span class="tooltip">
+        <span class="tooltip-icon">?</span>
+        <span class="tooltip-text">Each player starts with 100 chips. Bets are subtracted as the game progresses.</span>
+      </span>
+    </div>
+
+    <div id="scoreboard">
+      🏆 P1 Wins: 0 | P2 Wins: 0
+      <span class="tooltip">
+        <span class="tooltip-icon">?</span>
+        <span class="tooltip-text">Tracks how many rounds each player has won.</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- Hands Display -->
+  <section class="cards-area">
+    <!-- Player 1 -->
+    <div class="player-hand">
+      <h3>Player 1</h3>
+      <div id="player1" class="hand"></div>
+    </div>
+
+    <!-- Player 2 -->
+    <div class="player-hand">
+      <h3>Player 2</h3>
+      <div id="player2" class="hand"></div>
+    </div>
+  </section>
+
+  <!-- Community Cards -->
+  <section class="card-display">
+    <strong>Community Cards</strong>
+    <span class="tooltip">
+      <span class="tooltip-icon">?</span>
+      <span class="tooltip-text">These five shared cards are revealed gradually (Flop, Turn, River) and used by both players to form the best hand.</span>
+    </span>
+    <div id="community" class="hand"></div>
+
+    <div id="potInfo" style="margin: 1rem 0; font-weight: bold;">
+      Pot: $0 | P1 Contribution: $0 | P2 Contribution: $0
+      <span class="tooltip">
+        <span class="tooltip-icon">?</span>
+        <span class="tooltip-text">The pot is the total amount wagered by both players in this round.</span>
+      </span>
+    </div>
+  </section>
+
+  <!-- Player 1 Controls -->
+  <section id="controlsP1" class="controls">
+    <h3>Player 1 Actions</h3>
+    <button id="callBtnP1">Call</button>
+    <button id="raiseBtnP1">Raise</button>
+    <input type="number" id="raiseAmountP1" placeholder="Raise Amount" min="1" />
+    <button id="foldBtnP1">Fold</button>
+  </section>
+
+  <!-- Player 2 Controls -->
+  <section id="controlsP2" class="controls">
+    <h3>Player 2 Actions</h3>
+    <button id="callBtnP2">Call</button>
+    <button id="raiseBtnP2">Raise</button>
+    <input type="number" id="raiseAmountP2" placeholder="Raise Amount" min="1" />
+    <button id="foldBtnP2">Fold</button>
+  </section>
+
+  <!-- Global Controls -->
+  <section class="controls">
+    <button id="startBtn">Start Round</button>
+    <button id="rematchBtn">Rematch</button>
+    <button id="resetBtn">Reset</button>
+
+  </section>
+
+  <div id="turnIndicator" style="margin: 1rem 0; font-weight: bold; font-size: 1.1rem;">
+    🕹️ <span id="activePlayer">Waiting...</span>
+  </div>
+  
+
+  <!-- Win Probability -->
+  <section id="winProb" class="probability-display">
+    P1 Win %: <span id="p1WinPct">--</span> |
+    P2 Win %: <span id="p2WinPct">--</span>
+    Tie %: <span id="tiePct">--</span>
+    <span class="tooltip">
+      <span class="tooltip-icon">?</span>
+      <span class="tooltip-text">This is your chance of winning based on current cards and probabilities calculated via simulation.</span>
+    </span>
+  </section>
+
+  <!-- Odds Grid -->
+  <div id="oddsLoading" style="text-align:center; font-size: 0.9rem; margin-top:0.5rem;">
+    ⏳ Loading win odds per card...
+  </div>
+
+  <div id="oddsByCard" class="card-odds">
+    <h3>
+      Win Odds if Next Card is Dealt
+      <span class="tooltip">
+        <span class="tooltip-icon">?</span>
+        <span class="tooltip-text">Visualizes how your chance of winning would change depending on what card appears next.</span>
+      </span>
+    </h3>
+    <div id="oddsGrid" class="deck-grid"></div>
+  </div>
+
+  <!-- Deck Stats -->
+  <section class="deck-info">
+    <h3>Deck Information</h3>
+    <p><strong>Cards Left:</strong> <span id="deckRemaining">--</span></p>
+    <p><strong>Used Cards:</strong> <span id="usedCards">--</span></p>
+    <div id="deckViewer">
+      <h4>Deck Viewer</h4>
+      <div id="deckGrid" class="deck-grid"></div>
+    </div>
+  </section>
+
+  <!-- Game History -->
+  <section class="game-history">
+    <h3>Round History</h3>
+    <ul id="historyLog"></ul>
+    <div id="roundStats"></div>
+  </section>
+
+  <!-- Log Details -->
+  <section class="log-details">
+    <h3>Detailed Game Log</h3>
+    <div id="logDetails"></div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
