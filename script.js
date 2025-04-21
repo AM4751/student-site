@@ -19,17 +19,17 @@
 */
 
 /* -------------------- 1. CONSTANTS -------------------- */
-const suits       = ['♠','♥','♦','♣'];
-const values      = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-const handRanks   = ['High Card','One Pair','Two Pair','Three of a Kind',
-                     'Straight','Flush','Full House','Four of a Kind',
-                     'Straight Flush'];
+const suits = ['♠', '♥', '♦', '♣'];
+const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const handRanks = ['High Card', 'One Pair', 'Two Pair', 'Three of a Kind',
+  'Straight', 'Flush', 'Full House', 'Four of a Kind',
+  'Straight Flush'];
 const DEFAULT_BET = 10;
 
 /* all live buttons/inputs that really exist in the markup */
-const P1_CONTROLS = ['callBtnP1','raiseBtnP1','foldBtnP1','raiseAmountP1'];
-const P2_CONTROLS = ['callBtnP2','raiseBtnP2','foldBtnP2','raiseAmountP2'];
-const START_CONTROLS = ['startBtn','resetBtn','rematchBtn'];
+const P1_CONTROLS = ['callBtnP1', 'raiseBtnP1', 'foldBtnP1', 'raiseAmountP1'];
+const P2_CONTROLS = ['callBtnP2', 'raiseBtnP2', 'foldBtnP2', 'raiseAmountP2'];
+const START_CONTROLS = ['startBtn', 'resetBtn', 'rematchBtn'];
 
 /* put this right after the other CONSTANTS section ------------------------- */
 const BETTING_CONTROLS = [
@@ -55,56 +55,65 @@ function showControls(buttonIds = []) {
 
 /* -------------------- 2. STATE -------------------- */
 let deck = [];
-let playerHands = [[],[]];
+let playerHands = [[], []];
 let communityCards = [];
-let chips      = loadChips();          // [ P1 , P2 ]
+let chips = loadChips();          // [ P1 , P2 ]
 let scoreboard = loadScoreboard();     // [ P1 , P2 ]
 let roundHistory = [];
-let roundStats   = [];
-let contributions = [0,0];
+let roundStats = [];
+let contributions = [0, 0];
 let currentPlayer = 1;                 // 1 or 2
-let gameState = { stage:'preflop', pot:0, currentBet:0, folded:false };
+let gameState = { stage: 'preflop', pot: 0, currentBet: 0, folded: false };
+let oddsWorker = null;
+let betStarter = 1;     // player who opened this betting round
+let betCompleted = false; // becomes true after the second player acts
 
 /* -------------------- 3. PERSISTENCE -------------------- */
-function loadChips()      { return JSON.parse(localStorage.getItem('pokerChips')      || '[100,100]'); }
-function loadScoreboard() { return JSON.parse(localStorage.getItem('pokerScoreboard') || '[0,0]'   ); }
-function saveState(){
-  localStorage.setItem('pokerChips',      JSON.stringify(chips));
+function loadChips() { return JSON.parse(localStorage.getItem('pokerChips') || '[100,100]'); }
+function loadScoreboard() { return JSON.parse(localStorage.getItem('pokerScoreboard') || '[0,0]'); }
+function saveState() {
+  localStorage.setItem('pokerChips', JSON.stringify(chips));
   localStorage.setItem('pokerScoreboard', JSON.stringify(scoreboard));
 }
 
 /* -------------------- 4.  DECK  -------------------- */
-function createDeck(){ return suits.flatMap(s=>values.map(v=>({suit:s,value:v}))); }
-function shuffleDeck(d){
-  for(let i=d.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1)); [d[i],d[j]]=[d[j],d[i]];
+function createDeck() { return suits.flatMap(s => values.map(v => ({ suit: s, value: v }))); }
+function shuffleDeck(d) {
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));[d[i], d[j]] = [d[j], d[i]];
   } return d;
 }
-function ensureFreshDeck(){
-  if(deck.length<9) deck = shuffleDeck(createDeck());
+function ensureFreshDeck() {
+  if (deck.length < 9) deck = shuffleDeck(createDeck());
 }
-function resetRound(){
+function resetRound() {
   deck = shuffleDeck(createDeck());
-  playerHands=[[],[]]; communityCards=[]; contributions=[0,0];
-  gameState={stage:'preflop',pot:0,currentBet:0,folded:false};
-  document.getElementById('raiseAmountP1').value='';
-  document.getElementById('raiseAmountP2').value='';
+  playerHands = [[], []]; communityCards = []; contributions = [0, 0];
+  gameState = { stage: 'preflop', pot: 0, currentBet: 0, folded: false };
+  document.getElementById('raiseAmountP1').value = '';
+  document.getElementById('raiseAmountP2').value = '';
   logState('Round reset');
   updatePotUI(); updateDeckStats(); updateDeckGrid();
 }
-function dealHoleCards(){
+function dealHoleCards() {
   ensureFreshDeck();
-  playerHands[0]=[deck.pop(),deck.pop()];
-  playerHands[1]=[deck.pop(),deck.pop()];
-  logState('Hole cards dealt',true);
+  playerHands[0] = [deck.pop(), deck.pop()];
+  playerHands[1] = [deck.pop(), deck.pop()];
+  logState('Hole cards dealt', true);
   updateDeckStats();
 }
-function dealFlop(){ deck.pop(); communityCards=[deck.pop(),deck.pop(),deck.pop()];
-  gameState.stage='flop';  logState('Flop dealt',true); updateDeckStats(); }
-function dealTurn(){ deck.pop(); communityCards.push(deck.pop());
-  gameState.stage='turn';  logState('Turn dealt',true); updateDeckStats(); }
-function dealRiver(){ deck.pop(); communityCards.push(deck.pop());
-  gameState.stage='river'; logState('River dealt',true); updateDeckStats(); }
+function dealFlop() {
+  deck.pop(); communityCards = [deck.pop(), deck.pop(), deck.pop()];
+  gameState.stage = 'flop'; logState('Flop dealt', true); updateDeckStats();
+}
+function dealTurn() {
+  deck.pop(); communityCards.push(deck.pop());
+  gameState.stage = 'turn'; logState('Turn dealt', true); updateDeckStats();
+}
+function dealRiver() {
+  deck.pop(); communityCards.push(deck.pop());
+  gameState.stage = 'river'; logState('River dealt', true); updateDeckStats();
+}
 
 
 /* ------------------------------------------------------------------
@@ -112,17 +121,17 @@ function dealRiver(){ deck.pop(); communityCards.push(deck.pop());
    simulateRoundStepByStep() to initialise each betting phase
 ------------------------------------------------------------------- */
 function startPlayerBet(playerNum, stageLabel, afterBetCallback = null) {
-  currentPlayer        = playerNum;             // 1 or 2
-  betStarter           = playerNum;             // remember opener
-  betCompleted         = false;                 // reset flag
-  gameState.stage      = stageLabel.toLowerCase();
+  currentPlayer = playerNum;             // 1 or 2
+  betStarter = playerNum;             // remember opener
+  betCompleted = false;                 // reset flag
+  gameState.stage = stageLabel.toLowerCase();
   gameState.currentBet = 0;
 
   showControls(BETTING_CONTROLS);
   updateTurnDisplay();
 
   window._afterBetCallback =
-      typeof afterBetCallback === 'function' ? afterBetCallback : null;
+    typeof afterBetCallback === 'function' ? afterBetCallback : null;
 }
 
 
@@ -153,21 +162,28 @@ function finalizeRound(message) {
 
 
 /* -------------------- 5.  TURN / CONTROL helpers -------------------- */
-function enableGroup(ids,yes){
-  ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!yes; });
+function enableGroup(ids, yes) {
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !yes; });
 }
-function switchTurn(){ currentPlayer=currentPlayer===1?2:1; updateTurnDisplay(); }
+function switchTurn() { currentPlayer = currentPlayer === 1 ? 2 : 1; updateTurnDisplay(); }
 
-function updateTurnDisplay(){
-  const lbl=document.getElementById('activePlayer');
-  if(lbl) lbl.textContent = `Player ${currentPlayer}'s Turn`;
-  enableGroup(P1_CONTROLS,currentPlayer===1);
-  enableGroup(P2_CONTROLS,currentPlayer===2);
+function updateTurnDisplay() {
+  /* label */
+  const lbl = document.getElementById('activePlayer');
+  if (lbl) lbl.textContent = `Player ${currentPlayer}'s Turn`;
+
+  /* enable/disable buttons as before */
+  enableGroup(P1_CONTROLS, currentPlayer === 1);
+  enableGroup(P2_CONTROLS, currentPlayer === 2);
+
+  /* add/remove .active class for outline + tint */
+  document.querySelectorAll('.player-panel').forEach((panel, idx) => {
+    panel.classList.toggle('active', idx === currentPlayer - 1);
+  });
 }
+
 
 /* ---------- Betting‑round bookkeeping (NEW) ---------- */
-let betStarter   = 1;     // player who opened this betting round
-let betCompleted = false; // becomes true after the second player acts
 
 function maybeFinishBetting(playerNum) {
   /* second player just acted → fire stored callback once */
@@ -185,87 +201,112 @@ function maybeFinishBetting(playerNum) {
 
 
 /* -------------------- 6.  BETTING (fixed IDs) -------------------- */
-function player1Bet(action){
-  enableGroup(P1_CONTROLS,false);
-  let bet=DEFAULT_BET;
-  const input=document.getElementById('raiseAmountP1');
-  const amt = Number(input.value)||DEFAULT_BET;
+function player1Bet(action) {
+  enableGroup(P1_CONTROLS, false);
+  let bet = DEFAULT_BET;
+  const input = document.getElementById('raiseAmountP1');
+  const amt = Number(input.value) || DEFAULT_BET;
 
-  if(action==='raise'){
-    bet = Math.min(Math.max(amt,DEFAULT_BET),chips[0]);
+  if (action === 'raise') {
+    bet = Math.min(Math.max(amt, DEFAULT_BET), chips[0]);
     addToLogDetails(`Player 1 raises to $${bet}`);
-  }else if(action==='call'){
-    bet = Math.min(gameState.currentBet||DEFAULT_BET,chips[0]);
+  } else if (action === 'call') {
+    bet = Math.min(gameState.currentBet || DEFAULT_BET, chips[0]);
     addToLogDetails(`Player 1 calls $${bet}`);
-  }else{ return handleFold(1); }
+  } else { return handleFold(1); }
 
-  chips[0]-=bet; contributions[0]+=bet; gameState.pot+=bet; gameState.currentBet=bet;
+  chips[0] -= bet; contributions[0] += bet; gameState.pot += bet; gameState.currentBet = bet;
   updatePotUI(); switchTurn();
   maybeFinishBetting(1);
 
 }
 
-function player2Bet(action){
-  enableGroup(P2_CONTROLS,false);
-  let bet=DEFAULT_BET;
-  const input=document.getElementById('raiseAmountP2');
-  const amt = Number(input.value)||DEFAULT_BET;
+function player2Bet(action) {
+  enableGroup(P2_CONTROLS, false);
+  let bet = DEFAULT_BET;
+  const input = document.getElementById('raiseAmountP2');
+  const amt = Number(input.value) || DEFAULT_BET;
 
-  if(action==='raise'){
-    bet=Math.min(Math.max(amt,DEFAULT_BET),chips[1]);
+  if (action === 'raise') {
+    bet = Math.min(Math.max(amt, DEFAULT_BET), chips[1]);
     addToLogDetails(`Player 2 raises to $${bet}`);
-  }else if(action==='call'){
-    bet=Math.min(gameState.currentBet||DEFAULT_BET,chips[1]);
+  } else if (action === 'call') {
+    bet = Math.min(gameState.currentBet || DEFAULT_BET, chips[1]);
     addToLogDetails(`Player 2 calls $${bet}`);
-  }else{ return handleFold(2); }
+  } else { return handleFold(2); }
 
-  chips[1]-=bet; contributions[1]+=bet; gameState.pot+=bet; gameState.currentBet=bet;
+  chips[1] -= bet; contributions[1] += bet; gameState.pot += bet; gameState.currentBet = bet;
   updatePotUI(); switchTurn();
   maybeFinishBetting(2);
 }
 
-function handleFold(loser){
-  gameState.folded=true;
-  const winner = loser===1?2:1;
-  scoreboard[winner-1]++; chips[winner-1]+=gameState.pot;
-  contributions=[0,0]; updatePotUI();
+function handleFold(loser) {
+  gameState.folded = true;
+  const winner = loser === 1 ? 2 : 1;
+  scoreboard[winner - 1]++; chips[winner - 1] += gameState.pot;
+  contributions = [0, 0]; updatePotUI();
   finalizeRound(`Player ${loser} folds. Player ${winner} wins.`);
 }
 
 /* -------------------- 7.  WIN‑PROBABILITY (runtime‑safe) -------------------- */
-function updateWinProbabilityUI(){
-  const p1=document.getElementById('p1WinPct'),
-        p2=document.getElementById('p2WinPct'),
-        tie=document.getElementById('tiePct');
-  if(!p1||!p2||!tie) return;
+/* ---------- Win‑probability now off‑thread ---------- */
 
-  /* Only run when we still expect more community cards */
-  const remaining = 5 - communityCards.length;
-  if(remaining<=0){ p1.textContent=p2.textContent=tie.textContent='--'; return; }
+function updateWinProbabilityUI() {
 
-  /* build “used / available” each call so the vars always exist */
-  const used       = [...playerHands[0],...playerHands[1],...communityCards];
-  const usedKeys   = new Set(used.map(c=>c.value+c.suit));
-  const available  = deck.filter(c=>!usedKeys.has(c.value+c.suit));
+  /* --- cache spans & loader --- */
+  const p1WinPct = document.getElementById('p1WinPct');
+  const p2WinPct = document.getElementById('p2WinPct');
+  const tiePct = document.getElementById('tiePct');
+  const loader = document.getElementById('oddsLoading');
+  const grid = document.getElementById('oddsGrid');
+  if (!p1WinPct || !p2WinPct || !tiePct || !loader || !grid) return;
 
-  let p1Win=0,p2Win=0,pTie=0, trials=600;   // quick Monte‑Carlo
-  for(let t=0;t<trials;t++){
-    /* fast sample without mutating global deck */
-    const sampleDeck=[...available];
-    while(sampleDeck.length>remaining) sampleDeck.splice(Math.floor(Math.random()*sampleDeck.length),1);
-    const board = [...communityCards,...sampleDeck];
+  /* reset */
+  p1WinPct.textContent = p2WinPct.textContent = tiePct.textContent = '--';
+  loader.textContent = '⏳ 0%…';
+  loader.style.display = 'block';
+  grid.innerHTML = '';
 
-    const best1=getBestHand([...playerHands[0],...board]);
-    const best2=getBestHand([...playerHands[1],...board]);
+  /* create the worker once */
+  if (!oddsWorker) {
+    oddsWorker = new Worker('oddsWorker.js');
 
-    if(best1.rank>best2.rank)      p1Win++;
-    else if(best2.rank>best1.rank) p2Win++;
-    else                           pTie++;
+    oddsWorker.onmessage = ({ data }) => {
+      if (data.type === 'progress') {
+        /* stream card into the grid */
+        renderOddsByCard([data.result], true);
+        const pct = Math.round((data.done / data.total) * 100);
+        loader.textContent = `⏳ ${pct}%…`;
+        return;
+      }
+
+      if (data.type === 'complete') {
+        loader.style.display = 'none';
+
+        const sums = data.oddsByCard.reduce((acc, o) => ({
+          p1: acc.p1 + o.p1,
+          p2: acc.p2 + o.p2,
+          tie: acc.tie + o.tie
+        }), { p1: 0, p2: 0, tie: 0 });
+
+        const n = data.oddsByCard.length;
+        p1WinPct.textContent = Math.round(sums.p1 / n) + '%';
+        p2WinPct.textContent = Math.round(sums.p2 / n) + '%';
+        tiePct.textContent = Math.round(sums.tie / n) + '%';
+      }
+    };
   }
-  p1.textContent = Math.round(p1Win/trials*100)+'%';
-  p2.textContent = Math.round(p2Win/trials*100)+'%';
-  tie.textContent= Math.round(pTie/trials*100)+'%';
+
+  /* kick off a fresh simulation */
+  oddsWorker.postMessage({
+    playerHands,
+    communityCards,
+    deck,
+    trialsPerCard: 30     /* tweak accuracy ↔ speed */
+  });
 }
+
+
 
 
 
@@ -348,62 +389,17 @@ function checkVictory() {
 }
 
 //* -------------------- EVENT BINDINGS (clean) -------------------- */
-document.getElementById('startBtn' ).addEventListener('click', simulateRoundStepByStep);
-document.getElementById('resetBtn' ).addEventListener('click', resetGame);
+document.getElementById('startBtn').addEventListener('click', simulateRoundStepByStep);
+document.getElementById('resetBtn').addEventListener('click', resetGame);
 document.getElementById('rematchBtn').addEventListener('click', rematchGame);
 
-document.getElementById('callBtnP1'  ).addEventListener('click', ()=>currentPlayer===1&&player1Bet('call'));
-document.getElementById('raiseBtnP1' ).addEventListener('click', ()=>currentPlayer===1&&player1Bet('raise'));
-document.getElementById('foldBtnP1'  ).addEventListener('click', ()=>currentPlayer===1&&player1Bet('fold'));
+document.getElementById('callBtnP1').addEventListener('click', () => currentPlayer === 1 && player1Bet('call'));
+document.getElementById('raiseBtnP1').addEventListener('click', () => currentPlayer === 1 && player1Bet('raise'));
+document.getElementById('foldBtnP1').addEventListener('click', () => currentPlayer === 1 && player1Bet('fold'));
 
-document.getElementById('callBtnP2'  ).addEventListener('click', ()=>currentPlayer===2&&player2Bet('call'));
-document.getElementById('raiseBtnP2' ).addEventListener('click', ()=>currentPlayer===2&&player2Bet('raise'));
-document.getElementById('foldBtnP2'  ).addEventListener('click', ()=>currentPlayer===2&&player2Bet('fold'));
-
-
-// Player 1 actions
-document.getElementById('callBtnP1').addEventListener('click', () => {
-  if (currentPlayer !== 1) return;
-  console.log('Player 1 calls');
-  // callLogic(1);
-  switchTurn();
-});
-
-document.getElementById('raiseBtnP1').addEventListener('click', () => {
-  if (currentPlayer !== 1) return;
-  const amount = parseInt(document.getElementById('raiseAmountP1').value) || 0;
-  console.log(`Player 1 raises by ${amount}`);
-  // raiseLogic(1, amount);
-  switchTurn();
-});
-
-document.getElementById('foldBtnP1').addEventListener('click', () => {
-  if (currentPlayer !== 1) return;
-  console.log('Player 1 folds');
-  // handleFold(1);
-  // maybe reset round or declare winner
-});
-
-// Player 2 actions
-document.getElementById('callBtnP2').addEventListener('click', () => {
-  if (currentPlayer !== 2) return;
-  player2Bet('call');
-  switchTurn();
-});
-
-document.getElementById('raiseBtnP2').addEventListener('click', () => {
-  if (currentPlayer !== 2) return;
-  player2Bet('raise');
-  switchTurn();
-});
-
-document.getElementById('foldBtnP2').addEventListener('click', () => {
-  if (currentPlayer !== 2) return;
-  player2Bet('fold');
-});
-
-
-
+document.getElementById('callBtnP2').addEventListener('click', () => currentPlayer === 2 && player2Bet('call'));
+document.getElementById('raiseBtnP2').addEventListener('click', () => currentPlayer === 2 && player2Bet('raise'));
+document.getElementById('foldBtnP2').addEventListener('click', () => currentPlayer === 2 && player2Bet('fold'));
 
 
 // -------------------- 11. HAND EVALUATION [~60] --------------------
@@ -681,10 +677,10 @@ function updateDeckGrid() {
   });
 }
 
-function renderOddsByCard(oddsList) {
+function renderOddsByCard(oddsList, append = false) {
   const grid = document.getElementById('oddsGrid');
   if (!grid) return;
-  grid.innerHTML = '';
+  if (!append) grid.innerHTML = '';
 
   oddsList.forEach(item => {
     const div = document.createElement('div');

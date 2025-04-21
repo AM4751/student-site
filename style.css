@@ -1,22 +1,27 @@
-/* ----------------------------------------
-  Poker Trainer Game – Master Stylesheet
-  Sections:
-    1. Global Layout & Typography
-    2. Header & Game Info Display
-    3. Card Display & Animation
-    4. Player Controls & Betting
-    5. Win Probability Display
-    6. Odds Visualization Grid
-    7. Deck Viewer & Game History
-    8. Log Details & Round Stats
-    9. Responsive Layout
-   10. Tooltips & Explanations
----------------------------------------- */
+/* =============================================
+   Texas Hold'em Trainer – Master Stylesheet (2025‑04‑18)
+   -------------------------------------------------------
+   1. Base / Reset & Typography
+   2. Layout Wrappers
+   3. Card & Player Panels
+   4. Controls & Buttons (high‑contrast)
+   5. Probabilities / Odds Grid
+   6. Deck, History & Logs
+   7. Tooltips
+   8. Animations & Transition Effects
+   9. Responsive Tweaks
+   ============================================= */
 
-/* === 1. Global Layout & Typography === */
+/* ---------- 1. Base / Reset & Typography ---------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #064420;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #064420;
   color: #fff;
   text-align: center;
   padding: 2rem;
@@ -24,159 +29,166 @@ body {
   margin: auto;
 }
 
-h1, h2, h3 {
-  margin-bottom: 1rem;
+h1,
+h2,
+h3 {
+  margin-bottom: 1rem
 }
 
 .subtitle {
   font-size: 1rem;
   color: #ccc;
-  margin-top: -1rem;
-  margin-bottom: 2rem;
+  margin: -1rem 0 2rem
 }
 
-button,
-input[type="number"] {
-  display: inline-block;
-  margin: 0.25rem;
-  padding: 6px 10px;
-  font-size: 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* === 2. Header & Game Info Display === */
-#chips,
-#scoreboard,
-#potInfo {
-  margin-bottom: 1rem;
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-/* === 3. Card Display & Animation === */
-.card-display,
-.cards-area {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.cards-area {
+/* ---------- 2. Layout Wrappers -------------------- */
+.players-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
   gap: 2rem;
   flex-wrap: wrap;
-  margin-top: 2rem;
-  text-align: center;
+  margin: 2rem 0 5rem;
+  /* ↑ bottom space grows from 3.5 → 5 rem */
 }
 
-.player-block {
-  flex: 1;
-  min-width: 150px;
+.player-panel {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center
 }
 
-.community-block {
-  flex: 2;
-  min-width: 250px;
+.player-panel .controls {
+  margin-top: 1rem
 }
 
+/* ---------- 3. Card & Player Panels --------------- */
 .hand {
   display: flex;
   gap: 8px;
-  margin: 0.5rem 0;
+  margin: .5rem 0;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: center
 }
 
 .hand img {
   width: 60px;
   height: auto;
   border-radius: 4px;
-  background-color: white;
+  background: #fff;
   padding: 4px;
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, .2);
+  transition: transform .3s, box-shadow .3s;
   transform-style: preserve-3d;
-  animation: fadeInCard 0.4s ease-in-out;
+  animation: fadeInCard .4s ease-in-out;
 }
 
 .hand img:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 8px rgba(255, 255, 255, .4)
 }
 
 .card-img.highlight {
   outline: 3px solid #00ff88;
   box-shadow: 0 0 10px #00ff88;
-  transform: scale(1.05);
+  transform: scale(1.05)
 }
 
 .card-img.flip {
-  animation: flipCard 0.5s forwards;
+  animation: flipCard .5s forwards
 }
 
 @keyframes fadeInCard {
-  from { opacity: 0; transform: scale(0.8) rotateY(10deg); }
-  to   { opacity: 1; transform: scale(1) rotateY(0deg); }
+  from {
+    opacity: 0;
+    transform: scale(.8) rotateY(10deg)
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotateY(0)
+  }
 }
 
 @keyframes flipCard {
-  0%   { transform: rotateY(180deg); }
-  100% { transform: rotateY(0deg); }
+  0% {
+    transform: rotateY(180deg)
+  }
+
+  100% {
+    transform: rotateY(0deg)
+  }
 }
 
-/* === 4. Player Controls & Betting === */
-#controls {
-  margin-top: 2rem;
-  text-align: center;
+/* ---------- 4. Controls & Buttons ----------------- */
+/* baseline button appearance */
+.controls button,
+.controls input[type=number] {
+  appearance: none;
+  border: 2px solid #ffffff;
+  background: #006ad0;
+  /* vivid blue */
+  color: #ffffff;
+  font-weight: 600;
+  padding: 8px 14px;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  margin: .25rem;
+  transition: transform .15s, box-shadow .15s;
+  cursor: pointer;
 }
 
-#controls button,
-#controls input {
-  margin-right: 8px;
+.controls button:hover:not(:disabled),
+.controls input[type=number]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .45);
 }
 
-.bet-inputs input {
-  width: 80px;
-  padding: 0.4rem;
-  text-align: center;
-  margin: 0 0.5rem;
+.controls button:focus-visible,
+.controls input[type=number]:focus-visible {
+  outline: 3px dashed #ffffff;
+  outline-offset: 2px;
 }
 
-/* === 5. Win Probability Display === */
+/* active player highlight */
+.player-panel.active {
+  outline: 4px solid #00ff88;
+  outline-offset: 4px;
+  border-radius: 8px;
+  box-shadow: 0 0 12px #00ff8875
+}
+
+.player-panel.active .controls button:not(:disabled) {
+  background: #00ff88;
+  color: #003815;
+  border-color: #003815;
+}
+
+/* disabled state */
+button:disabled {
+  background: #555;
+  border-color: #888;
+  color: #ccc;
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* ---------- 5. Probabilities / Odds Grid ---------- */
 .probability-display {
   margin-top: 2rem;
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: bold
 }
 
-.probability-display small {
-  display: block;
-  font-size: 0.85rem;
-  color: #ccc;
-  margin-top: 0.5rem;
-}
-
-/* === 6. Odds Visualization Grid === */
 .card-odds {
-  font-size: 0.7rem;
+  font-size: .7rem;
   text-align: center;
   line-height: 1.1;
-  margin-top: 1rem;
+  margin-top: 1rem
 }
 
 .card-odds span {
-  display: block;
+  display: block
 }
 
 #oddsGrid,
@@ -186,129 +198,145 @@ button:disabled {
   gap: 6px;
   justify-items: center;
   max-width: 700px;
-  margin: 1rem auto;
+  margin: 1rem auto
 }
 
 .card-preview {
   width: 36px;
   height: 54px;
-  background-color: white;
+  background: #fff;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: .8rem;
   line-height: 54px;
   text-align: center;
-  box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, .2)
 }
 
 .card-preview.used {
-  background-color: #ccc;
+  background: #ccc;
   color: #555;
-  text-decoration: line-through;
+  text-decoration: line-through
 }
 
-/* === 7. Deck Viewer & Game History === */
-.deck-info, .game-history, .log-details {
+/* ---------- 6. Deck, History & Logs --------------- */
+.deck-info,
+.game-history,
+.log-details {
   margin-top: 2rem;
   text-align: left;
   max-width: 700px;
-  margin-inline: auto;
-}
-
-#deckRemaining, #usedCards {
-  font-weight: bold;
+  margin-inline: auto
 }
 
 #historyLog {
-  list-style-type: none;
+  list-style: none;
   padding-left: 0;
-  color: white;
-  font-size: 0.85rem;
-  text-align: left;
+  color: #fff;
+  font-size: .85rem;
+  text-align: left
 }
 
 #historyLog li {
-  margin-bottom: 0.5rem;
+  margin-bottom: .5rem
 }
 
-/* === 8. Log Details & Round Stats === */
 #logDetails {
   font-family: monospace;
   white-space: pre-line;
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid #ccc;
-  padding: 0.5rem;
+  padding: .5rem;
   background: #f9f9f9;
   color: #222;
-  font-size: 0.9rem;
+  font-size: .9rem
 }
 
 #roundStats {
-  font-size: 0.9rem;
+  font-size: .9rem;
   margin-top: 1rem;
   text-align: left;
   max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  color: white;
+  margin-inline: auto;
+  color: #fff
 }
 
-/* === 9. Responsive Layout === */
-@media screen and (max-width: 768px) {
-  .cards-area {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  #controls input[type="number"] {
-    width: 60px;
-  }
-
-  .deck-grid {
-    grid-template-columns: repeat(8, 1fr);
-  }
-}
-
-/* === 10. Tooltips & Explanations === */
+/* ---------- 7. Tooltips --------------------------- */
 .tooltip {
   position: relative;
   display: inline-block;
-  cursor: help;
+  cursor: help
 }
 
 .tooltip-icon {
   display: inline-block;
   width: 16px;
   height: 16px;
-  background-color: #00ff88;
+  background: #00ff88;
   border-radius: 50%;
   text-align: center;
   font-size: 12px;
   color: #000;
   line-height: 16px;
   font-weight: bold;
-  margin-left: 4px;
+  margin-left: 4px
 }
 
 .tooltip-text {
   visibility: hidden;
   width: 220px;
-  background-color: #333;
+  background: #333;
   color: #fff;
   text-align: left;
-  padding: 0.5rem;
+  padding: .5rem;
   border-radius: 6px;
   position: absolute;
   z-index: 1;
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.75rem;
+  font-size: .75rem;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity .3s
 }
 
 .tooltip:hover .tooltip-text {
   visibility: visible;
-  opacity: 1;
+  opacity: 1
+}
+
+/* ---------- 8. Animations & Misc ------------------ */
+/* (keyframes defined earlier) */
+
+/* ---------- 9. Responsive Tweaks ----------------- */
+@media(max-width:768px) {
+  .players-row {
+    flex-direction: column;
+    align-items: center
+  }
+
+  input[type=number] {
+    width: 60px
+  }
+
+  .deck-grid {
+    grid-template-columns: repeat(8, 1fr)
+  }
+}
+
+
+/* style.css */
+#oddsLoading {
+  display: none;
+  animation: pulse 1.2s infinite ease-in-out alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: .4
+  }
+
+  to {
+    opacity: 1
+  }
 }
