@@ -1,158 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <title>Texas Hold’em Trainer</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Texas Hold'em - 2 Players</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .board, .players {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .card {
+      width: 50px;
+      height: 70px;
+      border: 1px solid #aaa;
+      margin: 5px;
+      text-align: center;
+      line-height: 70px;
+      font-size: 20px;
+      background: white;
+    }
+    button {
+      margin-right: 10px;
+      padding: 10px 20px;
+    }
+    .hand {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Header -->
-  <header>
-    <h1>Texas Hold’em Trainer</h1>
-    <p class="subtitle">
-      Learn how to play poker by simulating hands and visualizing your win odds.
-    </p>
 
-    <div id="chips">
-      💰 Player 1: $100 | Player 2: $100
-      <span class="tooltip">
-        <span class="tooltip-icon">?</span>
-        <span class="tooltip-text">Each player starts with 100 chips. Bets are subtracted as the game progresses.</span>
-      </span>
-    </div>
+<h1>Texas Hold'em (2 Players)</h1>
 
-    <div id="scoreboard">
-      🏆 P1 Wins: 0 | P2 Wins: 0
-      <span class="tooltip">
-        <span class="tooltip-icon">?</span>
-        <span class="tooltip-text">Tracks how many rounds each player has won.</span>
-      </span>
-    </div>
-  </header>
-
-  <!-- Players (cards + controls) -->
-  <section class="players-row">
-    <!-- Player 1 -->
-    <div class="player-panel">
-      <h3>Player 1</h3>
-      <div id="player1" class="hand"></div>
-
-      <div id="controlsP1" class="controls">
-        <button id="callBtnP1">Call</button>
-        <button id="raiseBtnP1">Raise</button>
-        <input type="number" id="raiseAmountP1" placeholder="Raise" min="1" />
-        <button id="foldBtnP1">Fold</button>
-      </div>
-      <!-- NEW inline win‑percentage -->
-      <div class="win-pct">
-        Win %: <span id="p1WinPct">--</span>
-      </div>
-    </div>
-
-    <!-- Player 2 -->
-    <div class="player-panel">
-      <h3>Player 2</h3>
-      <div id="player2" class="hand"></div>
-
-      <div id="controlsP2" class="controls">
-        <button id="callBtnP2">Call</button>
-        <button id="raiseBtnP2">Raise</button>
-        <input type="number" id="raiseAmountP2" placeholder="Raise" min="1" />
-        <button id="foldBtnP2">Fold</button>
-      </div>
-      <!-- NEW inline win‑percentage -->
-      <div class="win-pct">
-        Win %: <span id="p2WinPct">--</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Community Cards -->
-  <section class="card-display">
-    <strong>Community Cards</strong>
-    <span class="tooltip">
-      <span class="tooltip-icon">?</span>
-      <span class="tooltip-text">These five shared cards are revealed gradually (Flop, Turn, River) and used by both
-        players to form the best hand.</span>
-    </span>
-    <div id="community" class="hand"></div>
-
-    <div id="potInfo" style="margin:1rem 0;font-weight:bold;">
-      Pot: $0 | P1 Contribution: $0 | P2 Contribution: $0
-      <span class="tooltip">
-        <span class="tooltip-icon">?</span>
-        <span class="tooltip-text">The pot is the total amount wagered by both players in this round.</span>
-      </span>
-    </div>
-  </section>
-
-  <!-- Global Controls -->
-  <section class="controls">
-    <button id="startBtn">Start Round</button>
-    <button id="rematchBtn">Rematch</button>
-    <button id="resetBtn">Reset</button>
-  </section>
-
-  <div id="turnIndicator" style="margin:1rem 0;font-weight:bold;font-size:1.1rem;">
-    🕹️ <span id="activePlayer">Waiting…</span>
+<div class="players">
+  <div>
+    <h2>Player 1</h2>
+    <div id="p1Hand" class="hand"></div>
+    <div id="p1Odds">Win %: --</div>
   </div>
-
-  <!-- Win Probability -->
-  <section id="winProb" class="probability-display">
-    P1 Win %: <span id="p1WinPct">‑‑</span> | 
-    P2 Win %: <span id="p2WinPct">‑‑</span> 
-    Tie %: <span id="tiePct">‑‑</span>
-    <span class="tooltip">
-      <span class="tooltip-icon">?</span>
-      <span class="tooltip-text">Chance of winning based on current cards (Monte‑Carlo simulation).</span>
-    </span>
-  </section>
-
-  <!-- Odds Grid -->
-  <div id="oddsLoading" style="text-align:center;font-size:0.9rem;margin-top:0.5rem;">
-    ⏳ Loading win odds per card…
+  <div style="margin-left: 50px;">
+    <h2>Player 2</h2>
+    <div id="p2Hand" class="hand"></div>
+    <div id="p2Odds">Win %: --</div>
   </div>
+</div>
 
-  <div id="oddsByCard" class="card-odds">
-    <h3>
-      Win Odds if Next Card is Dealt
-      <span class="tooltip">
-        <span class="tooltip-icon">?</span>
-        <span class="tooltip-text">Visualizes how your chance of winning would change depending on what card appears
-          next.</span>
-      </span>
-    </h3>
-    <div id="oddsGrid" class="deck-grid"></div>
-  </div>
+<h2>Community Cards</h2>
+<div id="community" class="board"></div>
 
-  <!-- Deck Stats -->
-  <section class="deck-info">
-    <h3>Deck Information</h3>
-    <p><strong>Cards Left:</strong> <span id="deckRemaining">‑‑</span></p>
-    <p><strong>Used Cards:</strong> <span id="usedCards">‑‑</span></p>
+<div style="margin-top: 20px;">
+  <button onclick="startHand()">Start New Hand</button>
+  <button onclick="nextStep()">Next Step</button>
+</div>
 
-    <div id="deckViewer">
-      <h4>Deck Viewer</h4>
-      <div id="deckGrid" class="deck-grid"></div>
-    </div>
-  </section>
+<div id="status" style="margin-top: 20px; font-weight: bold;"></div>
 
-  <!-- Game History -->
-  <section class="game-history">
-    <h3>Round History</h3>
-    <ul id="historyLog"></ul>
-    <div id="roundStats"></div>
-  </section>
+<script>
+  const suits = ['♠', '♥', '♦', '♣'];
+  const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+  const handRanks = ['High Card', 'One Pair', 'Two Pair', 'Three of a Kind', 'Straight', 'Flush', 'Full House', 'Four of a Kind', 'Straight Flush'];
 
-  <!-- Log Details -->
-  <section class="log-details">
-    <h3>Detailed Game Log</h3>
-    <div id="logDetails"></div>
-  </section>
+  let deck = [], p1Hand = [], p2Hand = [], communityCards = [], stage = 0, roundNumber = 1;
 
-  <script src="script.js"></script>
+  function createDeck() {
+    return suits.flatMap(s => values.map(v => ({ value: v, suit: s })));
+  }
+
+  function shuffleDeck(deck) {
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+  }
+
+  function renderCards(containerId, cards) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = '';
+    cards.forEach(card => {
+      const img = document.createElement('img');
+      img.className = 'card';
+      img.src = `images/cards/${cardToFilename(card)}`;
+      el.appendChild(img);
+    });
+  }
+
+  function cardToFilename(card) {
+    const suitMap = { '♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs' };
+    const valueMap = { 'J': 'jack', 'Q': 'queen', 'K': 'king', 'A': 'ace' };
+    const value = valueMap[card.value] || card.value;
+    const suit = suitMap[card.suit];
+    return `${value}_of_${suit}.png`;
+  }
+
+  function formatCard(card) {
+    return `${card.value}${card.suit}`;
+  }
+
+  function startHand() {
+    deck = createDeck();
+    shuffleDeck(deck);
+    p1Hand = [deck.pop(), deck.pop()];
+    p2Hand = [deck.pop(), deck.pop()];
+    communityCards = [];
+    stage = 0;
+    render();
+    document.getElementById('status').innerHTML = `<h3>Round ${roundNumber} Start</h3>`;
+  }
+
+  function nextStep() {
+    if (stage === 0) {
+      deck.pop();
+      communityCards = [deck.pop(), deck.pop(), deck.pop()];
+      logRound('Flop');
+    } else if (stage === 1) {
+      deck.pop();
+      communityCards.push(deck.pop());
+      logRound('Turn');
+    } else if (stage === 2) {
+      deck.pop();
+      communityCards.push(deck.pop());
+      logRound('River');
+    } else if (stage === 3) {
+      logRound('Showdown', true);
+      roundNumber++;
+    }
+    stage++;
+    render();
+  }
+
+  function render() {
+    renderCards('p1Hand', p1Hand);
+    renderCards('p2Hand', p2Hand);
+    renderCards('community', communityCards);
+    updateOdds();
+  }
+
+  function updateOdds() {
+    const trials = 300;
+    let p1Wins = 0, p2Wins = 0;
+    for (let i = 0; i < trials; i++) {
+      const tempDeck = deck.slice();
+      const tempBoard = communityCards.slice();
+      while (tempBoard.length < 5) {
+        tempBoard.push(tempDeck.splice(Math.floor(Math.random() * tempDeck.length), 1)[0]);
+      }
+      const p1Best = getBestHand(p1Hand.concat(tempBoard));
+      const p2Best = getBestHand(p2Hand.concat(tempBoard));
+      if (p1Best.rank > p2Best.rank) p1Wins++;
+      else if (p2Best.rank > p1Best.rank) p2Wins++;
+    }
+    document.getElementById('p1Odds').textContent = `Win %: ${Math.round(p1Wins / trials * 100)}%`;
+    document.getElementById('p2Odds').textContent = `Win %: ${Math.round(p2Wins / trials * 100)}%`;
+  }
+
+  function getBestHand(cards) {
+    const combos = getCombinations(cards, 5);
+    let best = { rank: -1, name: '', cards: [] };
+    for (const combo of combos) {
+      const result = evaluateHand(combo);
+      if (result.rank > best.rank) best = { rank: result.rank, name: result.name, cards: combo };
+    }
+    return best;
+  }
+
+  function getCombinations(arr, size) {
+    const result = [];
+    function helper(path, start) {
+      if (path.length === size) {
+        result.push(path);
+        return;
+      }
+      for (let i = start; i < arr.length; i++) {
+        helper(path.concat(arr[i]), i + 1);
+      }
+    }
+    helper([], 0);
+    return result;
+  }
+
+  function evaluateHand(cards) {
+    const counts = {}, suits = {};
+    for (let c of cards) {
+      counts[c.value] = (counts[c.value] || 0) + 1;
+      suits[c.suit] = (suits[c.suit] || []).concat(c);
+    }
+    const vals = cards.map(c => values.indexOf(c.value)).sort((a, b) => a - b);
+    const uniqueVals = [...new Set(vals)];
+    if (uniqueVals.includes(12)) uniqueVals.unshift(-1);
+
+    const hasRun = (arr) => {
+      let run = 1;
+      for (let i = 1; i < arr.length; i++) {
+        if (arr[i] === arr[i - 1] + 1) run++;
+        else run = 1;
+        if (run >= 5) return true;
+      }
+      return false;
+    };
+
+    const flush = Object.values(suits).some(g => g.length >= 5);
+    const straight = hasRun(uniqueVals);
+
+    let name = 'High Card';
+    const freq = Object.values(counts).sort((a, b) => b - a);
+
+    if (Object.values(suits).some(g => g.length >= 5 && hasRun(g.map(c => values.indexOf(c.value)).sort((a, b) => a - b)))) {
+      name = 'Straight Flush';
+    } else if (freq[0] === 4) name = 'Four of a Kind';
+    else if (freq[0] === 3 && freq[1] === 2) name = 'Full House';
+    else if (flush) name = 'Flush';
+    else if (straight) name = 'Straight';
+    else if (freq[0] === 3) name = 'Three of a Kind';
+    else if (freq[0] === 2 && freq[1] === 2) name = 'Two Pair';
+    else if (freq[0] === 2) name = 'One Pair';
+
+    return { rank: handRanks.indexOf(name), name };
+  }
+
+  function logRound(label, final = false) {
+    const p1 = getBestHand(p1Hand.concat(communityCards));
+    const p2 = getBestHand(p2Hand.concat(communityCards));
+
+    let winnerText = '';
+    if (p1.rank > p2.rank) winnerText = `Player 1 is ahead with ${p1.name}`;
+    else if (p2.rank > p1.rank) winnerText = `Player 2 is ahead with ${p2.name}`;
+    else winnerText = `It's a tie with ${p1.name}`;
+
+    const p1Cards = p1.cards.map(formatCard).join(' ');
+    const p2Cards = p2.cards.map(formatCard).join(' ');
+
+    const statusEl = document.getElementById('status');
+    statusEl.innerHTML += `
+      <div><strong>Round ${roundNumber} ${label}</strong></div>
+      <div>${winnerText}</div>
+      <div>Player 1: ${p1.name} (${p1Cards})</div>
+      <div>Player 2: ${p2.name} (${p2Cards})</div>
+      <hr>
+    `;
+  }
+</script>
+
+
+
 </body>
-
 </html>
