@@ -2,251 +2,248 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Texas Hold'em - 2 Players</title>
+  <title>Texas Hold'em - N Players</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    .board, .players {
-      display: flex;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .card {
-      width: 50px;
-      height: 70px;
-      border: 1px solid #aaa;
-      margin: 5px;
-      text-align: center;
-      line-height: 70px;
-      font-size: 20px;
-      background: white;
-    }
-    button {
-      margin-right: 10px;
-      padding: 10px 20px;
-    }
-    .hand {
-      display: flex;
-      flex-wrap: wrap;
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    .controls { margin-bottom: 20px; }
+    .players, .board { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; }
+    .player { border: 1px solid #ccc; padding: 10px; border-radius: 4px; width: 150px; }
+    .card { width: 40px; height: 60px; margin: 2px; }
+    #community .card { width: 50px; height: 75px; }
+    button { margin-right: 10px; padding: 8px 16px; }
+    #status div { margin-top: 8px; }
+    hr { border: none; border-top: 1px solid #eee; margin: 10px 0; }
   </style>
 </head>
-
 <body>
 
-<h1>Texas Hold'em (2 Players)</h1>
-
-<div class="players">
-  <div>
-    <h2>Player 1</h2>
-    <div id="p1Hand" class="hand"></div>
-    <div id="p1Odds">Win %: --</div>
+  <h1>Texas Hold'em</h1>
+  <div class="controls">
+    <label>
+      Number of players:
+      <select id="numPlayers">
+        <option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+      </select>
+    </label>
+    <button onclick="startHand()">Start New Hand</button>
+    <button id="nextBtn" onclick="nextStep()">Next Step</button>
   </div>
-  <div style="margin-left: 50px;">
-    <h2>Player 2</h2>
-    <div id="p2Hand" class="hand"></div>
-    <div id="p2Odds">Win %: --</div>
-  </div>
-</div>
 
-<h2>Community Cards</h2>
-<div id="community" class="board"></div>
+  <div class="players" id="players"></div>
 
-<div style="margin-top: 20px;">
-  <button onclick="startHand()">Start New Hand</button>
-  <button onclick="nextStep()">Next Step</button>
-</div>
+  <h2>Community Cards</h2>
+  <div class="board" id="community"></div>
 
-<div id="status" style="margin-top: 20px; font-weight: bold;"></div>
+  <div id="status"></div>
 
-<script>
-  const suits = ['♠', '♥', '♦', '♣'];
-  const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-  const handRanks = ['High Card', 'One Pair', 'Two Pair', 'Three of a Kind', 'Straight', 'Flush', 'Full House', 'Four of a Kind', 'Straight Flush'];
+  <script>
+    const suits     = ['♠','♥','♦','♣'];
+    const values    = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+    const handRanks = ['High Card','One Pair','Two Pair','Three of a Kind','Straight','Flush','Full House','Four of a Kind','Straight Flush'];
 
-  let deck = [], p1Hand = [], p2Hand = [], communityCards = [], stage = 0, roundNumber = 1;
+    let deck, communityCards, stage, roundNumber, numPlayers, hands;
 
-  function createDeck() {
-    return suits.flatMap(s => values.map(v => ({ value: v, suit: s })));
-  }
-
-  function shuffleDeck(deck) {
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]];
+    function createDeck() {
+      return suits.flatMap(s => values.map(v => ({value: v, suit: s})));
     }
-  }
-
-  function renderCards(containerId, cards) {
-    const el = document.getElementById(containerId);
-    el.innerHTML = '';
-    cards.forEach(card => {
-      const img = document.createElement('img');
-      img.className = 'card';
-      img.src = `images/cards/${cardToFilename(card)}`;
-      el.appendChild(img);
-    });
-  }
-
-  function cardToFilename(card) {
-    const suitMap = { '♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs' };
-    const valueMap = { 'J': 'jack', 'Q': 'queen', 'K': 'king', 'A': 'ace' };
-    const value = valueMap[card.value] || card.value;
-    const suit = suitMap[card.suit];
-    return `${value}_of_${suit}.png`;
-  }
-
-  function formatCard(card) {
-    return `${card.value}${card.suit}`;
-  }
-
-  function startHand() {
-    deck = createDeck();
-    shuffleDeck(deck);
-    p1Hand = [deck.pop(), deck.pop()];
-    p2Hand = [deck.pop(), deck.pop()];
-    communityCards = [];
-    stage = 0;
-    render();
-    document.getElementById('status').innerHTML = `<h3>Round ${roundNumber} Start</h3>`;
-  }
-
-  function nextStep() {
-    if (stage === 0) {
-      deck.pop();
-      communityCards = [deck.pop(), deck.pop(), deck.pop()];
-      logRound('Flop');
-    } else if (stage === 1) {
-      deck.pop();
-      communityCards.push(deck.pop());
-      logRound('Turn');
-    } else if (stage === 2) {
-      deck.pop();
-      communityCards.push(deck.pop());
-      logRound('River');
-    } else if (stage === 3) {
-      logRound('Showdown', true);
-      roundNumber++;
-    }
-    stage++;
-    render();
-  }
-
-  function render() {
-    renderCards('p1Hand', p1Hand);
-    renderCards('p2Hand', p2Hand);
-    renderCards('community', communityCards);
-    updateOdds();
-  }
-
-  function updateOdds() {
-    const trials = 300;
-    let p1Wins = 0, p2Wins = 0;
-    for (let i = 0; i < trials; i++) {
-      const tempDeck = deck.slice();
-      const tempBoard = communityCards.slice();
-      while (tempBoard.length < 5) {
-        tempBoard.push(tempDeck.splice(Math.floor(Math.random() * tempDeck.length), 1)[0]);
-      }
-      const p1Best = getBestHand(p1Hand.concat(tempBoard));
-      const p2Best = getBestHand(p2Hand.concat(tempBoard));
-      if (p1Best.rank > p2Best.rank) p1Wins++;
-      else if (p2Best.rank > p1Best.rank) p2Wins++;
-    }
-    document.getElementById('p1Odds').textContent = `Win %: ${Math.round(p1Wins / trials * 100)}%`;
-    document.getElementById('p2Odds').textContent = `Win %: ${Math.round(p2Wins / trials * 100)}%`;
-  }
-
-  function getBestHand(cards) {
-    const combos = getCombinations(cards, 5);
-    let best = { rank: -1, name: '', cards: [] };
-    for (const combo of combos) {
-      const result = evaluateHand(combo);
-      if (result.rank > best.rank) best = { rank: result.rank, name: result.name, cards: combo };
-    }
-    return best;
-  }
-
-  function getCombinations(arr, size) {
-    const result = [];
-    function helper(path, start) {
-      if (path.length === size) {
-        result.push(path);
-        return;
-      }
-      for (let i = start; i < arr.length; i++) {
-        helper(path.concat(arr[i]), i + 1);
+    function shuffle(d) {
+      for (let i = d.length-1; i>0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [d[i], d[j]] = [d[j], d[i]];
       }
     }
-    helper([], 0);
-    return result;
-  }
-
-  function evaluateHand(cards) {
-    const counts = {}, suits = {};
-    for (let c of cards) {
-      counts[c.value] = (counts[c.value] || 0) + 1;
-      suits[c.suit] = (suits[c.suit] || []).concat(c);
+    function cardToFilename(c) {
+      const m = {'♠':'spades','♥':'hearts','♦':'diamonds','♣':'clubs'};
+      const vmap = {'J':'jack','Q':'queen','K':'king','A':'ace'};
+      const v = vmap[c.value]||c.value, s=m[c.suit];
+      return `${v}_of_${s}.png`;
     }
-    const vals = cards.map(c => values.indexOf(c.value)).sort((a, b) => a - b);
-    const uniqueVals = [...new Set(vals)];
-    if (uniqueVals.includes(12)) uniqueVals.unshift(-1);
+    function formatCard(c) { return c.value + c.suit; }
 
-    const hasRun = (arr) => {
-      let run = 1;
-      for (let i = 1; i < arr.length; i++) {
-        if (arr[i] === arr[i - 1] + 1) run++;
-        else run = 1;
-        if (run >= 5) return true;
+    function startHand() {
+      // reset
+      roundNumber = 1;
+      stage       = 0;
+      numPlayers  = +document.getElementById('numPlayers').value;
+      document.getElementById('status').innerHTML = `<h3>Round ${roundNumber} Start</h3>`;
+
+      // build player panels
+      const container = document.getElementById('players');
+      container.innerHTML = '';
+      hands = [];
+      for (let i=0; i<numPlayers; i++) {
+        hands.push([]);
+        const div = document.createElement('div');
+        div.className = 'player';
+        div.innerHTML = `
+          <h3>Player ${i+1}</h3>
+          <div id="hand${i}" style="display:flex;"></div>
+          <div id="odds${i}">Win %: --</div>
+        `;
+        container.appendChild(div);
       }
-      return false;
-    };
 
-    const flush = Object.values(suits).some(g => g.length >= 5);
-    const straight = hasRun(uniqueVals);
+      // deal
+      deck = createDeck(); shuffle(deck);
+      for (let i=0; i<numPlayers; i++) hands[i] = [deck.pop(), deck.pop()];
+      communityCards = [];
 
-    let name = 'High Card';
-    const freq = Object.values(counts).sort((a, b) => b - a);
+      render();
+      logRound('Pre-flop');
+      document.getElementById('nextBtn').disabled = false;
+    }
 
-    if (Object.values(suits).some(g => g.length >= 5 && hasRun(g.map(c => values.indexOf(c.value)).sort((a, b) => a - b)))) {
-      name = 'Straight Flush';
-    } else if (freq[0] === 4) name = 'Four of a Kind';
-    else if (freq[0] === 3 && freq[1] === 2) name = 'Full House';
-    else if (flush) name = 'Flush';
-    else if (straight) name = 'Straight';
-    else if (freq[0] === 3) name = 'Three of a Kind';
-    else if (freq[0] === 2 && freq[1] === 2) name = 'Two Pair';
-    else if (freq[0] === 2) name = 'One Pair';
+    function nextStep() {
+      if (stage > 3) return;          // guard against stepping past showdown
 
-    return { rank: handRanks.indexOf(name), name };
-  }
+      if (stage === 0) {
+        deck.pop();                    // burn
+        communityCards = [deck.pop(), deck.pop(), deck.pop()];
+        logRound('Flop');
+      }
+      else if (stage === 1) {
+        deck.pop(); communityCards.push(deck.pop());
+        logRound('Turn');
+      }
+      else if (stage === 2) {
+        deck.pop(); communityCards.push(deck.pop());
+        logRound('River');
+      }
+      else if (stage === 3) {
+        logRound('Showdown', true);
+        roundNumber++;
+        document.getElementById('nextBtn').disabled = true; // disable after showdown
+      }
 
-  function logRound(label, final = false) {
-    const p1 = getBestHand(p1Hand.concat(communityCards));
-    const p2 = getBestHand(p2Hand.concat(communityCards));
+      stage++;
+      render();
+    }
 
-    let winnerText = '';
-    if (p1.rank > p2.rank) winnerText = `Player 1 is ahead with ${p1.name}`;
-    else if (p2.rank > p1.rank) winnerText = `Player 2 is ahead with ${p2.name}`;
-    else winnerText = `It's a tie with ${p1.name}`;
+    function render() {
+      // players' hole cards
+      for (let i=0; i<numPlayers; i++) {
+        const div = document.getElementById(`hand${i}`);
+        div.innerHTML = '';
+        hands[i].forEach(c => {
+          const img = new Image(); img.className='card';
+          img.src = `images/cards/${cardToFilename(c)}`;
+          div.appendChild(img);
+        });
+      }
+      // community
+      const com = document.getElementById('community');
+      com.innerHTML = '';
+      communityCards.forEach(c => {
+        const img = new Image(); img.className='card';
+        img.src = `images/cards/${cardToFilename(c)}`;
+        com.appendChild(img);
+      });
+      updateOdds();
+    }
 
-    const p1Cards = p1.cards.map(formatCard).join(' ');
-    const p2Cards = p2.cards.map(formatCard).join(' ');
+    function updateOdds() {
+      const trials = 300;
+      const wins = Array(numPlayers).fill(0);
+      for (let t=0; t<trials; t++) {
+        let tempDeck = [...deck], board = [...communityCards];
+        while (board.length < 5) {
+          board.push(tempDeck.splice(Math.floor(Math.random()*tempDeck.length),1)[0]);
+        }
+        const bests = hands.map(h => getBestHand(h.concat(board)));
+        const maxr  = Math.max(...bests.map(b => b.rank));
+        bests.forEach((b,i)=> { if (b.rank === maxr) wins[i]++; });
+      }
+      wins.forEach((w,i) => {
+        document.getElementById(`odds${i}`).textContent =
+          `Win %: ${Math.round(w/trials*100)}%`;
+      });
+    }
 
-    const statusEl = document.getElementById('status');
-    statusEl.innerHTML += `
-      <div><strong>Round ${roundNumber} ${label}</strong></div>
-      <div>${winnerText}</div>
-      <div>Player 1: ${p1.name} (${p1Cards})</div>
-      <div>Player 2: ${p2.name} (${p2Cards})</div>
-      <hr>
-    `;
-  }
-</script>
+    function getBestHand(cards) {
+      let best = { rank:-1, name:'', cards:[] };
+      getCombinations(cards,5).forEach(combo => {
+        const r = evaluateHand(combo);
+        if (r.rank > best.rank) best={ rank:r.rank, name:r.name, cards:combo };
+      });
+      return best;
+    }
 
+    function getCombinations(arr,size) {
+      const res=[];
+      (function pick(path,start){
+        if(path.length===size){ res.push(path); return; }
+        for(let i=start;i<arr.length;i++) pick(path.concat(arr[i]),i+1);
+      })([],0);
+      return res;
+    }
 
+    function evaluateHand(cards) {
+      const counts={}, suits={};
+      cards.forEach(c=>{
+        counts[c.value]=(counts[c.value]||0)+1;
+        suits[c.suit]=(suits[c.suit]||[]).concat(c);
+      });
+      let vals=cards.map(c=>values.indexOf(c.value)).sort((a,b)=>a-b),
+          uniq=[...new Set(vals)];
+      if(uniq.includes(12)) uniq.unshift(-1);
+      const run=arr=>{
+        let r=1;
+        for(let i=1;i<arr.length;i++){
+          r = arr[i]===arr[i-1]+1 ? r+1 : 1;
+          if(r>=5) return true;
+        }
+        return false;
+      };
+      const isFlush   = Object.values(suits).some(g=>g.length>=5);
+      const isStraight= run(uniq);
+      let sf=false;
+      for(let s in suits){
+        let sv=suits[s].map(c=>values.indexOf(c.value)).sort((a,b)=>a-b),
+            us=[...new Set(sv)];
+        if(us.includes(12)) us.unshift(-1);
+        if(run(us)) sf=true;
+      }
+      const freq=Object.values(counts).sort((a,b)=>b-a);
+      let name='High Card';
+      if(sf)                 name='Straight Flush';
+      else if(freq[0]===4)   name='Four of a Kind';
+      else if(freq[0]===3&&freq[1]===2) name='Full House';
+      else if(isFlush)       name='Flush';
+      else if(isStraight)    name='Straight';
+      else if(freq[0]===3)   name='Three of a Kind';
+      else if(freq[0]===2&&freq[1]===2) name='Two Pair';
+      else if(freq[0]===2)   name='One Pair';
+      return { rank:handRanks.indexOf(name), name };
+    }
+
+    /**
+     * Logs the current round snapshot, showing who’s ahead and the full ranking.
+     * @param {string} label  – e.g. 'Pre-flop', 'Flop', 'Turn', 'River', 'Showdown'
+     * @param {boolean} final – on showdown turn this true to label “Winner” instead of “Leader”
+     */
+    function logRound(label, final=false) {
+      const statusEl = document.getElementById('status');
+      // gather each player's best
+      const results = hands.map((h,i)=>{
+        const b=getBestHand(h.concat(communityCards));
+        return { player:i+1, rank:b.rank, name:b.name };
+      });
+      // sort descending
+      results.sort((a,b)=>b.rank - a.rank);
+      // build lines
+      const top   = results[0];
+      const lead  = final
+        ? `Winner: Player ${top.player} wins with ${top.name}`
+        : `Leader: Player ${top.player} leads with ${top.name}`;
+      const ranking = results.map(r=>`P${r.player} (${r.name})`).join(' → ');
+      statusEl.innerHTML += `
+        <div><strong>Round ${roundNumber} ${label}</strong></div>
+        <div>${lead}</div>
+        <div>Ranking: ${ranking}</div>
+        <hr>
+      `;
+    }
+  </script>
 
 </body>
 </html>

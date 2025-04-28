@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poker Rules – Texas Hold’em</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; line-height: 1.6; }
+    h1, h2, h3 { color: #333; }
+    nav { margin-bottom: 20px; }
+    nav a { margin-right: 10px; text-decoration: none; color: #0066cc; }
+    nav a:hover { text-decoration: underline; }
+    section { margin-bottom: 30px; }
+    dl dt { font-weight: bold; margin-top: 0.5em; }
+    dl dd { margin: 0 0 0.5em 1.2em; }
+    .example-hand { display: flex; align-items: center; margin: 0.5em 0; }
+    .example-hand img { width: 40px; height: 60px; margin-right: 5px; }
+    .strategy-group { margin-bottom: 1em; }
+    ul { margin-left: 1.2em; }
+    ol { margin-left: 1.2em; }
+    code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+    hr { border: none; border-top: 1px solid #eee; margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html">← Back to Game</a>
+  </nav>
+
+  <h1>Texas Hold’em – Rules & Strategy</h1>
+
+  <section>
+    <h2>1. Objective</h2>
+    <p>
+      Each player receives two private “hole” cards. Five community cards are then dealt in stages.
+      Your goal is to make the best possible 5-card poker hand using any combination of your hole cards
+      and the community cards, or to bet in a way that causes all other players to fold.
+    </p>
+  </section>
+
+  <section>
+    <h2>2. Hand Rankings</h2>
+    <p>Listed from highest to lowest:</p>
+    <dl>
+      <dt>Straight Flush</dt>
+      <dd>
+        Five in sequence, all same suit.<br>
+        <div class="example-hand">
+          <img src="images/cards/8_of_spades.png" alt="8♠">
+          <img src="images/cards/9_of_spades.png" alt="9♠">
+          <img src="images/cards/10_of_spades.png" alt="10♠">
+          <img src="images/cards/jack_of_spades.png" alt="J♠">
+          <img src="images/cards/queen_of_spades.png" alt="Q♠">
+          Straight Flush (8–Q of ♠)
+        </div>
+      </dd>
+
+      <dt>Four of a Kind</dt>
+      <dd>
+        Four cards of the same rank.<br>
+        <div class="example-hand">
+          <img src="images/cards/king_of_diamonds.png" alt="K♦">
+          <img src="images/cards/king_of_clubs.png" alt="K♣">
+          <img src="images/cards/king_of_hearts.png" alt="K♥">
+          <img src="images/cards/king_of_spades.png" alt="K♠">
+          <img src="images/cards/7_of_clubs.png" alt="7♣">
+          Four Kings + 7♣
+        </div>
+      </dd>
+
+      <dt>Full House</dt>
+      <dd>
+        Three of a kind plus a pair.<br>
+        <div class="example-hand">
+          <img src="images/cards/9_of_hearts.png" alt="9♥">
+          <img src="images/cards/9_of_clubs.png" alt="9♣">
+          <img src="images/cards/9_of_diamonds.png" alt="9♦">
+          <img src="images/cards/4_of_clubs.png" alt="4♣">
+          <img src="images/cards/4_of_diamonds.png" alt="4♦">
+          9♣9♦9♥ + 4♣4♦
+        </div>
+      </dd>
+
+      <dt>Flush</dt>
+      <dd>
+        Any five of the same suit (not sequential).<br>
+        <div class="example-hand">
+          <img src="images/cards/2_of_hearts.png" alt="2♥">
+          <img src="images/cards/7_of_hearts.png" alt="7♥">
+          <img src="images/cards/8_of_hearts.png" alt="8♥">
+          <img src="images/cards/jack_of_hearts.png" alt="J♥">
+          <img src="images/cards/queen_of_hearts.png" alt="Q♥">
+          Heart Flush (2–Q)
+        </div>
+      </dd>
+
+      <dt>Straight</dt>
+      <dd>
+        Five cards in sequence (mixed suits).<br>
+        <div class="example-hand">
+          <img src="images/cards/5_of_diamonds.png" alt="5♦">
+          <img src="images/cards/6_of_clubs.png" alt="6♣">
+          <img src="images/cards/7_of_spades.png" alt="7♠">
+          <img src="images/cards/8_of_hearts.png" alt="8♥">
+          <img src="images/cards/9_of_diamonds.png" alt="9♦">
+          5♦6♣7♠8♥9♦
+        </div>
+      </dd>
+
+      <dt>Three of a Kind</dt>
+      <dd>
+        Three cards of the same rank.<br>
+        <div class="example-hand">
+          <img src="images/cards/jack_of_spades.png" alt="J♠">
+          <img src="images/cards/jack_of_diamonds.png" alt="J♦">
+          <img src="images/cards/jack_of_hearts.png" alt="J♥">
+          <img src="images/cards/2_of_clubs.png" alt="2♣">
+          <img src="images/cards/9_of_diamonds.png" alt="9♦">
+          Jacks + 2♣ + 9♦
+        </div>
+      </dd>
+
+      <dt>Two Pair</dt>
+      <dd>
+        Two different pairs.<br>
+        <div class="example-hand">
+          <img src="images/cards/10_of_clubs.png" alt="10♣">
+          <img src="images/cards/10_of_diamonds.png" alt="10♦">
+          <img src="images/cards/3_of_hearts.png" alt="3♥">
+          <img src="images/cards/3_of_spades.png" alt="3♠">
+          <img src="images/cards/king_of_diamonds.png" alt="K♦">
+          10♣10♦ + 3♥3♠ + K♦
+        </div>
+      </dd>
+
+      <dt>One Pair</dt>
+      <dd>
+        Two cards of the same rank.<br>
+        <div class="example-hand">
+          <img src="images/cards/ace_of_spades.png" alt="A♠">
+          <img src="images/cards/ace_of_hearts.png" alt="A♥">
+          <img src="images/cards/7_of_diamonds.png" alt="7♦">
+          <img src="images/cards/4_of_clubs.png" alt="4♣">
+          <img src="images/cards/2_of_clubs.png" alt="2♣">
+          A♠A♥ + 7♦4♣2♣
+        </div>
+      </dd>
+
+      <dt>High Card</dt>
+      <dd>
+        Highest single card when no other hand is made.<br>
+        <div class="example-hand">
+          <img src="images/cards/ace_of_diamonds.png" alt="A♦">
+          <img src="images/cards/king_of_hearts.png" alt="K♥">
+          <img src="images/cards/jack_of_clubs.png" alt="J♣">
+          <img src="images/cards/8_of_spades.png" alt="8♠">
+          <img src="images/cards/3_of_diamonds.png" alt="3♦">
+          A♦K♥J♣8♠3♦
+        </div>
+      </dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>3. Game Flow</h2>
+    <ol>
+      <li><strong>Deal:</strong> Each player gets 2 hole-cards.</li>
+      <li><strong>Pre-flop Betting:</strong> In turn, players may fold, call, or raise.</li>
+      <li><strong>Flop:</strong> Burn 1; deal 3 community cards; bet again.</li>
+      <li><strong>Turn:</strong> Burn 1; deal 4th community card; bet again.</li>
+      <li><strong>River:</strong> Burn 1; deal 5th community card; final betting round.</li>
+      <li><strong>Showdown:</strong> Reveal hands; best 5-card hand wins pot.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>4. Betting Actions</h2>
+    <ul>
+      <li><strong>Check:</strong> Pass when no bet is outstanding.</li>
+      <li><strong>Bet:</strong> Wager chips; creates new amount for others to call.</li>
+      <li><strong>Call:</strong> Match current highest bet.</li>
+      <li><strong>Raise:</strong> Increase the current bet.</li>
+      <li><strong>Fold:</strong> Exit the hand, forfeit any claim to the pot.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>5. Showdown & Tiebreakers</h2>
+    <ul>
+      <li>Select the best 5-card combination from your 7 cards (2 + 5).</li>
+      <li>If ranks tie, highest kicker(s) decide.</li>
+      <li>If completely identical, split the pot evenly.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>6. Glossary</h2>
+    <dl>
+      <dt>Blinds</dt>
+      <dd>Forced bets by two players to seed the pot.</dd>
+
+      <dt>Burn</dt>
+      <dd>Discarding the top card before dealing community cards.</dd>
+
+      <dt>Kicker</dt>
+      <dd>An unpaired card used to break ties when main ranks match.</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>7. Strategy by Table Size</h2>
+    <div class="strategy-group">
+      <h3>Heads-Up (2 Players)</h3>
+      <ul>
+        <li>Play aggressively; widen your range.</li>
+        <li>Steal blinds frequently in position.</li>
+        <li>Use position to apply maximum pressure.</li>
+      </ul>
+    </div>
+    <div class="strategy-group">
+      <h3>Short-Handed (3–6 Players)</h3>
+      <ul>
+        <li>Tighten slightly: avoid weak hands out of position.</li>
+        <li>Value-bet your strong hands; multi-way pots are rarer.</li>
+        <li>Pick bluff spots carefully—players defend more often.</li>
+      </ul>
+    </div>
+    <div class="strategy-group">
+      <h3>Full-Ring (7+ Players)</h3>
+      <ul>
+        <li>Play tight-aggressive: wait for premium hands early.</li>
+        <li>Late position: widen range slightly to steal blinds.</li>
+        <li>Avoid chasing low-odds draws in multi-way pots.</li>
+      </ul>
+    </div>
+  </section>
+
+  <nav>
+    <a href="index.html">← Back to Game</a>
+  </nav>
+
+</body>
+</html>
